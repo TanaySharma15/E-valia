@@ -1,4 +1,4 @@
-# I have broken down this project into several small steps so as to accomplish each one by one so that I won't look at the project like a huge one. It will look some small steps that I have to complete.
+## I have broken down this project into several small steps so as to accomplish each one by one so that I won't look at the project like a huge one. It will look some small steps that I have to complete.
 
 # Task - 1
 
