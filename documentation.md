@@ -13,3 +13,4 @@
 - Takes in job description.
 - If job description is not available it generates a job description for user.
 - Tells how much chances are there for selection based on resume and the job description.
+- Generates question for the interview
