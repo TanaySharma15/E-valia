@@ -29,3 +29,22 @@
 - Upon recieving the user's response we should call LLM again.
 - Everytime the LLM is called it should have context to user's resume and job description.
 - Also everytime the LLM should be called with previous responses.
+
+# Task -5
+
+- I have added generating interview questions.
+- It generates interview questions based on the resume, job description and user's previous response.
+- I have also added timer functionality where after a specific time LLM will stop asking question and just wish them goodbye.
+
+# Task - 6
+
+- After the generating question I have also added analysis part.
+- After the interview is over or the user stops the interview the whole chat is passed to another endpoint where LLM analysis the user and generate a report.
+- Currently I am using localstorage to store all the chats and analysis.
+- Later I should add it to database so user can get earlier reports also.
+
+# Task - 7
+
+- I need to add all the chats and analysis of the user in the database
+- There will be two endpoints if user just completed their interview they will get analysis of the latest interview.
+- But if user goes to library / archieves page he will get all the analysis of all his interviews
