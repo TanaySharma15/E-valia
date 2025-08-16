@@ -28,7 +28,7 @@ Do not include instructions or explanations; only output the job description.
   ];
 
   const result = await generateText({
-    model: google("gemini-2.0-flash"),
+    model: google("gemini-1.5-flash"),
     messages: convertToModelMessages(enhancedMessages),
   });
   const description = (
