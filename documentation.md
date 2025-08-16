@@ -14,3 +14,18 @@
 - If job description is not available it generates a job description for user.
 - Tells how much chances are there for selection based on resume and the job description.
 - Generates question for the interview
+
+# Task - 3
+
+- Now since we have build two endpoints that analyzes user's resume and generate job description for a selected job title
+- Now our next step would be to give summarized resume and job description to LLM as a prompt and ask it to generate 10 good level questions from it.
+- The questions should take all data from resume and job description and use it directly.
+- Questions should be around user's experience, projects and job description.
+
+# Task - 4
+
+- Now after our LLM has generated question our next step should be that we should something like: turn-based interview flow (AI asks one question → user answers → AI asks the next question) etc.
+- First the LLM should ask question then user should reply using textbox.
+- Upon recieving the user's response we should call LLM again.
+- Everytime the LLM is called it should have context to user's resume and job description.
+- Also everytime the LLM should be called with previous responses.
