@@ -31,6 +31,7 @@ export default function InterviewPage() {
 
     return () => clearInterval(timer);
   }, [timeLeft, started]);
+  const playAudio = async () => {};
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -66,6 +67,15 @@ export default function InterviewPage() {
       };
       setConversation((prev) => [...prev, aiMessage]);
       const formattedQuestion = formatQuestion(responseFromAI);
+      const tts = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: formattedQuestion }),
+      });
+
+      const ttsdata = await tts.json();
+      const audio = new Audio(`data:audio/wav;base64,${ttsdata.audio}`);
+      audio.play();
       setQuestion(formattedQuestion);
       setCurrentIndex((prev) => prev + 1);
       // console.log("RESponse", data);
@@ -134,6 +144,12 @@ export default function InterviewPage() {
           End Interview
         </button>
       )}
+      <button
+        className="px-4 py-2 bg-red-300 cursor-pointer"
+        onClick={playAudio}
+      >
+        TTS
+      </button>
     </div>
   );
 }

@@ -29,7 +29,7 @@ export async function POST(req: Request) {
       .select("title,description")
       .eq("user_id", userId);
     const jobTitle = job?.[0].title;
-    const jobDescription = job?.[0].title;
+    const jobDescription = job?.[0].description;
 
     const lastPart = userResponse[userResponse.length - 1].parts[0];
     let lastUserText = "";
