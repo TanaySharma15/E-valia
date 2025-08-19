@@ -58,3 +58,5 @@
 # Task -9 (Optional)
 
 - I should implement all the things using websocket instead of using vapi api.
+
+##### Done my backend (80%) and added frontend pages so now next task will be integrating frontend to backend.
