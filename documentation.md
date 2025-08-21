@@ -60,3 +60,7 @@
 - I should implement all the things using websocket instead of using vapi api.
 
 ##### Done my backend (80%) and added frontend pages so now next task will be integrating frontend to backend.
+
+# Task - 10
+
+- Create an in memory db or something similar to store resume analysis, jd, and conversation so db call won't take too long and questions too!
