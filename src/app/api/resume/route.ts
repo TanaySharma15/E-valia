@@ -49,9 +49,12 @@ export async function POST(req: Request) {
       .replace("```json", "")
       .replace("```", "") || "";
   // console.log("Result from gemini->  ", textOutput);
+  const data = JSON.parse(textOutput);
+  // console.log(data.name);
+
   const { error } = await supabase
     .from("resume")
-    .insert([{ user_id: userId, data: textOutput }]);
+    .insert([{ user_id: userId, data: data }]);
   if (error) {
     console.log("Error while inserting to db", error);
     return new Response(

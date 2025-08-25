@@ -23,7 +23,7 @@ export default function Home() {
     <div className="flex justify-center items-center w-full h-full">
       <button
         className="bg-blue-300 px-4 py-2 rounded-2xl cursor-pointer"
-        onClick={() => router.push("/chat")}
+        onClick={() => router.push("/resume")}
       >
         Proceed to submit Resume
       </button>

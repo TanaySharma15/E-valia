@@ -2,16 +2,29 @@
 
 import type React from "react";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import { convertFileToUrl } from "@/utils/Convert_File";
+import { toast } from "sonner";
 
 export function ResumeUpload() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const router = useRouter();
+  const [files, setFiles] = useState<FileList | undefined>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { messages, sendMessage } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/resume",
+    }),
+  });
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -48,37 +61,45 @@ export function ResumeUpload() {
     []
   );
 
-  const handleUpload = async () => {
-    if (!uploadedFile) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      setLoading(true);
+      const fileParts =
+        files && files.length > 0 ? await convertFileToUrl(files) : [];
+      try {
+        await sendMessage({
+          role: "user",
+          parts: [{ type: "text", text: input }, ...fileParts],
+        });
 
-    setIsUploading(true);
+        toast("Resume uploaded successfully");
+      } catch (error) {
+        toast("Error while uploading resume");
+      }
 
-    // Simulate upload process
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // Store file info in localStorage for demo purposes
-    localStorage.setItem(
-      "uploadedResume",
-      JSON.stringify({
-        name: uploadedFile.name,
-        size: uploadedFile.size,
-        uploadedAt: new Date().toISOString(),
-      })
-    );
-
-    setIsUploading(false);
-    router.push("/job-description");
+      setFiles(undefined);
+      setInput("");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+      router.push("/job-description");
+    }
   };
 
   const removeFile = () => {
-    setUploadedFile(null);
+    setFiles(undefined);
   };
 
   return (
     <div className="max-w-2xl mx-auto">
       <Card className="bg-card border-border">
         <CardContent className="p-8">
-          {!uploadedFile ? (
+          {!files ? (
             <div
               className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
                 isDragOver
@@ -115,7 +136,12 @@ export function ResumeUpload() {
               <input
                 type="file"
                 accept=".pdf"
-                onChange={handleFileSelect}
+                onChange={(event) => {
+                  if (event.target.files) {
+                    setFiles(event.target.files);
+                  }
+                }}
+                ref={fileInputRef}
                 className="hidden"
                 id="resume-upload"
               />
@@ -169,12 +195,21 @@ export function ResumeUpload() {
                       />
                     </svg>
                     <div className="text-left">
-                      <p className="font-medium text-foreground">
-                        {uploadedFile.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
+                      {files && files.length > 0 && (
+                        <p className="font-medium text-foreground">
+                          {Array.from(files)
+                            .map((file) => file.name)
+                            .join(", ")}
+                        </p>
+                      )}
+                      {files && files.length > 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          {Array.from(files)
+                            .map((file) => Math.ceil(file.size / 1024))
+                            .join(",")}{" "}
+                          kB
+                        </p>
+                      )}
                     </div>
                   </div>
                   <Button
@@ -192,10 +227,8 @@ export function ResumeUpload() {
                 <Button variant="outline" onClick={removeFile}>
                   Upload Different File
                 </Button>
-                <Button onClick={handleUpload} disabled={isUploading}>
-                  {isUploading
-                    ? "Processing..."
-                    : "Continue to Job Description"}
+                <Button onClick={handleSubmit} disabled={loading}>
+                  {loading ? "Processing..." : "Continue to Job Description"}
                 </Button>
               </div>
             </div>
