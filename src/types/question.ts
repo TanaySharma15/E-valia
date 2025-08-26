@@ -3,4 +3,5 @@ export interface InterviewQuestion {
   type: string;
   topic: string;
   question: string;
+  category?: string;
 }
