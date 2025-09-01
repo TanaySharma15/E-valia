@@ -3,11 +3,23 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { ProfilePhoto } from "./UserProfilePhoto";
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
-
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [user, setUser] = useState<string | undefined>();
   useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData.user?.id) {
+        setLoggedIn(true);
+        setUser(authData.user.email);
+      }
+    };
+    checkAuth();
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
@@ -61,21 +73,36 @@ export function Navigation() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-4 animate-fade-in-up">
-            <Button
-              variant="ghost"
-              asChild
-              className="hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105"
-            >
-              <Link href="/login">Login</Link>
-            </Button>
-            <Button
-              asChild
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-0.5"
-            >
-              <Link href="/signup">Sign Up</Link>
-            </Button>
-          </div>
+          {loggedIn === false ? (
+            <div className="flex items-center space-x-4 animate-fade-in-up">
+              <Button
+                variant="ghost"
+                asChild
+                className="hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105"
+              >
+                <Link href="/login">Login</Link>
+              </Button>
+              <Button
+                asChild
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-0.5"
+              >
+                <Link href="/signup">Sign Up</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-4 animate-fade-in-up">
+              <Button
+                variant="ghost"
+                asChild
+                className="hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105"
+              >
+                <Link href="/user">
+                  <ProfilePhoto />
+                  {user}
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </nav>

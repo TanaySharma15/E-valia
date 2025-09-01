@@ -8,7 +8,7 @@ export function InterviewInstructions() {
   const router = useRouter();
 
   const handleStartInterview = () => {
-    router.push("/interview");
+    router.push("/room");
   };
 
   return (
