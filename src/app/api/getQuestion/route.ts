@@ -1,7 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { google } from "@ai-sdk/google";
-import { convertToModelMessages, generateText, type UIMessage } from "ai";
-import { NextResponse } from "next/server";
+import { generateText } from "ai";
 
 export async function GET() {
   try {

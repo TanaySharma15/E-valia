@@ -10,21 +10,62 @@ import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Loader from "./Loader";
+
+// Type definitions
+interface VapiMessage {
+  type: string;
+  conversation?: ConversationMessage[];
+  [key: string]: unknown;
+}
+
+interface ConversationMessage {
+  role: "user" | "assistant" | "system";
+  content: string;
+  timestamp?: string;
+}
+
+interface AnalysisResult {
+  technicalKnowledge: string;
+  problemSolving: string;
+  communication: string;
+  responseTime: string;
+  strengths?: string[];
+  improvements?: string[];
+  finalRating?: {
+    score: number;
+    comment: string;
+  };
+  error?: string;
+}
+
+interface JobDetails {
+  title: string;
+  description: string;
+}
+
+interface AnalysisApiResponse {
+  text?: string;
+  data?: AnalysisResult;
+}
 
 export default function InterviewSession() {
   const vapiRef = useRef<Vapi | null>(null);
   const [question, setQuestion] = useState<InterviewQuestion[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<VapiMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [jobPosition, setJobPosition] = useState("");
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [started, setStarted] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null
+  );
   const [analyzing, setAnalyzing] = useState(false);
   const [isAISpeaking, setIsAISpeaking] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const router = useRouter();
   const questToAI = useRef("");
+  const [isInterviewStarting, setIsInterviewStarting] = useState(false);
 
   // Helper function to make text more speech-friendly
   const makeSpeechFriendly = (text: string): string => {
@@ -145,7 +186,7 @@ Key Guidelines:
     return () => clearInterval(interval);
   }, [started]);
 
-  const formatTime = (seconds: number) => {
+  const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, "0")}:${secs
@@ -158,13 +199,13 @@ Key Guidelines:
       vapiRef.current = new Vapi(process.env.NEXT_PUBLIC_VAPI_API_KEY!);
     }
 
-    const onCallStart = () => {
+    const onCallStart = (): void => {
       console.log("Call started");
       setStarted(true);
       setIsAISpeaking(true);
     };
 
-    const onMessage = (message: any) => {
+    const onMessage = (message: VapiMessage): void => {
       console.log("Message received:", message);
       setMessages((prev) => [...prev, message]);
 
@@ -176,13 +217,13 @@ Key Guidelines:
       }
     };
 
-    const onCallEnd = () => {
+    const onCallEnd = (): void => {
       console.log("Call ended");
       setStarted(false);
       setIsAISpeaking(false);
     };
 
-    const onError = (error: any) => {
+    const onError = (error: Error): void => {
       console.error("Vapi error ->", error);
     };
 
@@ -201,7 +242,7 @@ Key Guidelines:
   }, []);
 
   useEffect(() => {
-    async function getQuestions() {
+    async function getQuestions(): Promise<void> {
       try {
         setLoading(true);
         const res = await fetch("/api/getQuestion", {
@@ -211,7 +252,7 @@ Key Guidelines:
         const data = await res.json();
         const response = data.steps[0].response.messages[0].content[0].text;
         const formatted = formatQuestion(response);
-        const array = JSON.parse(formatted);
+        const array = JSON.parse(formatted) as InterviewQuestion[];
         setQuestion(array);
       } catch (error) {
         console.log("Error fetching questions:", error);
@@ -220,7 +261,7 @@ Key Guidelines:
       }
     }
 
-    async function getDetails() {
+    async function getDetails(): Promise<void> {
       try {
         const supabase = await createClient();
         const { data: authData } = await supabase.auth.getUser();
@@ -229,7 +270,9 @@ Key Guidelines:
           .from("job")
           .select("title,description")
           .eq("user_id", userId);
-        const jobTitle = job?.[0]?.title || "Software Developer";
+
+        const jobData = job as JobDetails[] | null;
+        const jobTitle = jobData?.[0]?.title || "Software Developer";
         setJobPosition(jobTitle);
       } catch (error) {
         console.log("Error fetching job details:", error);
@@ -241,22 +284,30 @@ Key Guidelines:
     getDetails();
   }, []);
 
-  const startInterview = () => {
-    if (question && question.length > 0) {
-      questToAI.current = "";
-      (question as InterviewQuestion[]).forEach((part) => {
-        const speechFriendlyQuestion = makeSpeechFriendly(part.question);
-        questToAI.current += `${part.id}: ${speechFriendlyQuestion}\n`;
-      });
+  const startInterview = (): void => {
+    try {
+      setIsInterviewStarting(true);
+      if (question && question.length > 0) {
+        questToAI.current = "";
+        question.forEach((part) => {
+          const speechFriendlyQuestion = makeSpeechFriendly(part.question);
+          questToAI.current += `${part.id}: ${speechFriendlyQuestion}\n`;
+        });
 
-      const assistantOptions = getAssistantOptions(questToAI.current);
-      vapiRef.current?.start(assistantOptions);
-    } else {
-      alert("Questions are still loading. Please wait.");
+        const assistantOptions = getAssistantOptions(questToAI.current);
+        vapiRef.current?.start(assistantOptions);
+      } else {
+        alert("Questions are still loading. Please wait.");
+      }
+    } catch (error) {
+      console.log(error);
+      alert("Error");
+    } finally {
+      setIsInterviewStarting(false);
     }
   };
 
-  const endInterview = async () => {
+  const endInterview = async (): Promise<void> => {
     try {
       setAnalyzing(true);
       vapiRef.current?.stop();
@@ -267,7 +318,7 @@ Key Guidelines:
         (message) => message.type === "conversation-update"
       );
 
-      let finalConversation = [];
+      let finalConversation: ConversationMessage[] = [];
       if (lastConversationUpdate && lastConversationUpdate.conversation) {
         finalConversation = lastConversationUpdate.conversation;
       }
@@ -280,27 +331,33 @@ Key Guidelines:
         return;
       }
 
-      const res = await axios.post("/api/analysis", {
+      const res = await axios.post<AnalysisApiResponse>("/api/analysis", {
         conversation: finalConversation,
       });
 
-      let analysisData: any;
-      const responseData = res.data as any;
+      let analysisData: AnalysisResult;
+      const responseData = res.data;
 
       if (typeof responseData.text === "string") {
         const jsonMatch = responseData.text.match(/```json\n([\s\S]*?)\n```/);
         if (jsonMatch) {
-          analysisData = JSON.parse(jsonMatch[1]);
+          analysisData = JSON.parse(jsonMatch[1]) as AnalysisResult;
         } else {
           try {
-            analysisData = JSON.parse(responseData.text);
+            analysisData = JSON.parse(responseData.text) as AnalysisResult;
           } catch {
             console.error("Could not parse analysis response");
-            analysisData = { error: "Failed to parse analysis" };
+            analysisData = {
+              error: "Failed to parse analysis",
+              technicalKnowledge: "",
+              problemSolving: "",
+              communication: "",
+              responseTime: "",
+            };
           }
         }
       } else {
-        analysisData = responseData;
+        analysisData = responseData as AnalysisResult;
       }
 
       setAnalysisResult(analysisData);
@@ -313,6 +370,13 @@ Key Guidelines:
   };
 
   // Pre-interview screen
+  if (analyzing) {
+    return (
+      <div className="w-full h-full">
+        <Loader />
+      </div>
+    );
+  }
   if (!started && !analysisResult) {
     return (
       <div className="max-w-2xl mx-auto text-center ">
@@ -347,7 +411,11 @@ Key Guidelines:
             <Button
               onClick={startInterview}
               size="lg"
-              className="w-full"
+              className={`w-full ${
+                isInterviewStarting
+                  ? "pointer-events-none"
+                  : "pointer-events-auto"
+              }`}
               disabled={loading || question.length === 0}
             >
               {loading ? "Loading Questions..." : "Start Interview"}
@@ -505,7 +573,13 @@ Key Guidelines:
       </div>
     );
   }
-
+  if (analyzing) {
+    return (
+      <div>
+        <Loader />
+      </div>
+    );
+  }
   // Analysis results screen
   if (analysisResult) {
     return (

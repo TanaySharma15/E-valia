@@ -87,7 +87,7 @@ export function ResumeUpload() {
       console.log(error);
     } finally {
       setLoading(false);
-      router.push("/job-description");
+      router.push("/job");
     }
   };
 

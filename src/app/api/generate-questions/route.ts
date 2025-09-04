@@ -1,11 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { google } from "@ai-sdk/google";
-import {
-  convertToModelMessages,
-  generateText,
-  streamText,
-  type UIMessage,
-} from "ai";
+import { convertToModelMessages, generateText, type UIMessage } from "ai";
 
 export async function POST(req: Request) {
   // const result = await google.speechModel()

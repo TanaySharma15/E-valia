@@ -39,6 +39,7 @@ export function JobDescriptionForm() {
 
   const handleAISubmit = async () => {
     try {
+      setIsGenerating(true);
       const res = await fetch("/api/job-description", {
         method: "POST",
         headers: {
@@ -58,6 +59,8 @@ export function JobDescriptionForm() {
       setJobDescription(description);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -155,7 +158,9 @@ export function JobDescriptionForm() {
               variant="outline"
               onClick={handleAISubmit}
               disabled={!jobTitle || isGenerating}
-              className="flex-1 bg-transparent"
+              className={`flex-1 bg-transparent ${
+                isGenerating ? "cursor-none" : "cursor-pointer"
+              } ${isGenerating ? "pointer-events-none" : ""}`}
             >
               {isGenerating ? "Generating..." : "Generate with AI"}
             </Button>

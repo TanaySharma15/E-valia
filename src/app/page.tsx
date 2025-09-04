@@ -1,8 +1,7 @@
 "use client";
-import { User } from "@/types/User";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function Home() {
   const supabase = createClient();
@@ -14,19 +13,12 @@ export default function Home() {
       if (data.user?.aud != "authenticated") {
         router.push("/login");
         return;
+      } else {
+        router.push("/resume");
       }
     }
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
 
-  return (
-    <div className="flex justify-center items-center w-full h-full">
-      <button
-        className="bg-blue-300 px-4 py-2 rounded-2xl cursor-pointer"
-        onClick={() => router.push("/resume")}
-      >
-        Proceed to submit Resume
-      </button>
-    </div>
-  );
+  return <div className="flex justify-center items-center w-full h-full"></div>;
 }

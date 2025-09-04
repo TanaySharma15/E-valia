@@ -1,5 +1,5 @@
 import { google } from "@ai-sdk/google";
-import { convertToModelMessages, generateText, type UIMessage } from "ai";
+import { generateText } from "ai";
 
 export async function POST(req: Request) {
   const { jobTitle, companyName }: { jobTitle: string; companyName: string } =

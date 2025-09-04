@@ -1,12 +1,16 @@
 "use client";
 import { useState } from "react";
 import DownArrow from "./DownArrow";
-
 const jobs = [
   "Full Stack developer",
   "Frontend developer",
   "Backend developer",
 ];
+
+type DropdownProps = {
+  jobTitle: string;
+  setJobTitle: (job: string) => void;
+};
 
 function Dropdown({ jobTitle, setJobTitle }: any) {
   const [isOpen, setIsOpen] = useState(false);

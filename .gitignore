@@ -39,3 +39,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+src/app/dashboard
+src/app/dashboard/page.tsx
+
+src/app/interview
+src/app/interview/page.tsx
+
+src/app/interview-instruction
+src/app/interview-instruction/page.tsx
+
+src/app/interview-user
+src/app/interview-user/page.tsx
+
+
+src/app/analysis
+src/app/analysis/page.tsx
+
+src/components/Dropdown.tsx
+src/components/TextBox.tsx

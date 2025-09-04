@@ -1,9 +1,13 @@
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
-
+type ConversationMessage = {
+  role: "user" | "assistant" | "system";
+  content: string;
+};
 export async function POST(req: Request) {
   try {
-    const { conversation }: { conversation: any[] } = await req.json();
+    const { conversation }: { conversation: ConversationMessage[] } =
+      await req.json();
     // console.log("Received conversation:", conversation);
 
     if (
@@ -39,7 +43,7 @@ export async function POST(req: Request) {
 
     // Create a readable conversation transcript
     const conversationTranscript = relevantMessages
-      .map((msg, index) => {
+      .map((msg) => {
         const speaker = msg.role === "assistant" ? "Interviewer" : "Candidate";
         return `${speaker}: ${msg.content}`;
       })

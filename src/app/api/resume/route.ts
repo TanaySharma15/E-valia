@@ -1,12 +1,10 @@
 import { createClient } from "@/utils/supabase/server";
 import { google } from "@ai-sdk/google";
-import {
-  convertToModelMessages,
-  generateText,
-  streamText,
-  type UIMessage,
-} from "ai";
-
+import { convertToModelMessages, generateText, type UIMessage } from "ai";
+type TextContent = {
+  type: "text";
+  text: string;
+};
 export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getUser();
@@ -43,8 +41,8 @@ export async function POST(req: Request) {
   });
   const textOutput =
     result.steps?.[0]?.content
-      .filter((c: any) => c.type === "text")
-      .map((c: any) => c.text)
+      .filter((c): c is TextContent => c.type === "text")
+      .map((c) => c.text)
       .join("")
       .replace("```json", "")
       .replace("```", "") || "";
