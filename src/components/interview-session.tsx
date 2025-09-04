@@ -62,7 +62,6 @@ export default function InterviewSession() {
   );
   const [analyzing, setAnalyzing] = useState(false);
   const [isAISpeaking, setIsAISpeaking] = useState(false);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const router = useRouter();
   const questToAI = useRef("");
   const [isInterviewStarting, setIsInterviewStarting] = useState(false);
@@ -390,7 +389,7 @@ Key Guidelines:
                 {jobPosition || "Loading..."}
               </Badge>
               <p className="text-muted-foreground">
-                Your mock interview is ready to begin. You'll be asked{" "}
+                Your mock interview is ready to begin. You&aposll be asked{" "}
                 {question.length} questions covering various aspects of the
                 role.
               </p>

@@ -20,7 +20,7 @@ export type User = {
   identities: Array<{
     id: string;
     user_id: string;
-    identity_data: Record<string, any>;
+    identity_data: Record<string, unknown>;
     provider: string;
     last_sign_in_at: string | null;
     created_at: string;

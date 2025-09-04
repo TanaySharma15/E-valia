@@ -1,6 +1,6 @@
 export const formatQuestion = (raw: string) => {
   try {
-    let clean = raw.trim().replace("```json", "").replace("```", "").trim();
+    const clean = raw.trim().replace("```json", "").replace("```", "").trim();
     // clean = clean.replace(/([^\\])\n/g, "$1\\n");
     if (clean.startsWith("{") && clean.endsWith("}")) {
       const parsed = JSON.parse(clean);

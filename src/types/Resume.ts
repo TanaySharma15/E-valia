@@ -42,12 +42,12 @@
 type GeminiPart = {
   type: string;
   text?: string;
-  providerMetadata?: any;
+  providerMetadata?: Record<string, unknown>;
   state?: string;
 };
 export type GeminiMessage = {
   id: string;
   role: string;
-  metadata: any;
+  metadata: Record<string, unknown>;
   parts: GeminiPart[];
 };

@@ -272,8 +272,8 @@ export function JobDescriptionForm() {
                 </svg>
               </div>
               <p className="text-muted-foreground">
-                Enter a job description and click "Extract Details" to see the
-                analysis here.
+                Enter a job description and click &quotExtract Details&quot to
+                see the analysis here.
               </p>
             </div>
           )}

@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
@@ -76,6 +76,7 @@ export function ResumeUpload() {
         toast("Resume uploaded successfully");
       } catch (error) {
         toast("Error while uploading resume");
+        console.log(error);
       }
 
       setFiles(undefined);
