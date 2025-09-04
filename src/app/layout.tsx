@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Script from "next/script";
 import { GA_MEASUREMENT_ID } from "@/lib/ga";
 import GAListener from "./ga-listener";
+import { Suspense } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,7 +53,11 @@ export default function RootLayout({
             </Script>
           </>
         )}
-        {isProd && <GAListener />}
+        {isProd && (
+          <Suspense fallback={null}>
+            <GAListener />
+          </Suspense>
+        )}
         {children}
         <Toaster position="top-center" />
       </body>
