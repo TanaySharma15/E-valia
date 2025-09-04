@@ -13,7 +13,7 @@ export function pageview(url: string) {
  * Send a custom event to GA4.
  * Example: event("sign_up", { method: "Google" })
  */
-export function event(action: string, params?: Record<string, any>) {
+export function event(action: string, params?: Record<string, unknown>) {
   if (!GA_MEASUREMENT_ID || typeof window === "undefined") return;
   window.gtag?.("event", action, params);
 }
