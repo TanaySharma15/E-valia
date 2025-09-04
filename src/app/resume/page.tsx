@@ -1,4 +1,4 @@
-import { Navigation } from "@/components/navigation";
+import { Navigation } from "@/components/Navigation";
 import { ResumeUpload } from "@/components/resume-upload";
 
 export default function UploadResumePage() {

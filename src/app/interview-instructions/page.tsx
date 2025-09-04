@@ -1,5 +1,5 @@
 import { InterviewInstructions } from "@/components/interview-instructions";
-import { Navigation } from "@/components/navigation";
+import { Navigation } from "@/components/Navigation";
 
 export default function InterviewInstructionsPage() {
   return (

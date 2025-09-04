@@ -1,5 +1,5 @@
 import InterviewSession from "@/components/interview-session";
-import { Navigation } from "@/components/navigation";
+import { Navigation } from "@/components/Navigation";
 
 export default function InterviewPage() {
   return (
