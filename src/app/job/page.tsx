@@ -1,5 +1,5 @@
-import { Navigation } from "@/components/navigation";
 import { JobDescriptionForm } from "@/components/job-description-form";
+import { Navigation } from "@/components/navigation";
 
 export default function JobDescriptionPage() {
   return (
