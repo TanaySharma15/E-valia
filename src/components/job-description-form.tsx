@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import { displayJSON, formatAIJSON } from "@/utils/format_AI_JSON";
+import { createClient } from "@/utils/supabase/client";
 
 interface ExtractedDetails {
   role: string;
@@ -84,7 +85,7 @@ export function JobDescriptionForm() {
     setIsExtracting(false);
   };
 
-  const handleStartInterview = () => {
+  const handleStartInterview = async () => {
     // Store job details for the interview
     const jobData = {
       jobTitle,
@@ -92,7 +93,14 @@ export function JobDescriptionForm() {
       jobDescription,
       extractedDetails,
     };
-
+    const supabase = await createClient();
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData.user?.id;
+    await supabase
+      .from("job")
+      .insert([
+        { user_id: userId, title: jobTitle, description: jobDescription },
+      ]);
     localStorage.setItem("jobDetails", JSON.stringify(jobData));
     router.push("/interview-instructions");
   };

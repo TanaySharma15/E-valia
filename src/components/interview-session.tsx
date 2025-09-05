@@ -262,7 +262,9 @@ Key Guidelines:
         }
 
         // The generateText result has a 'text' property
-        const response = data.text; // ✅ Correct way to access the generated text
+        const response = data?.steps[0].content?.[0]?.text; // ✅ Correct way to access the generated text
+        console.log(response);
+
         const formatted = formatQuestion(response);
         const array = JSON.parse(formatted) as InterviewQuestion[];
         setQuestion(array);
@@ -300,6 +302,8 @@ Key Guidelines:
 
   const startInterview = (): void => {
     try {
+      if (isInterviewStarting) return; // prevent double-clicks
+
       setIsInterviewStarting(true);
       if (question && question.length > 0) {
         questToAI.current = "";
@@ -316,7 +320,6 @@ Key Guidelines:
     } catch (error) {
       console.log(error);
       alert("Error");
-    } finally {
       setIsInterviewStarting(false);
     }
   };
@@ -425,14 +428,20 @@ Key Guidelines:
             <Button
               onClick={startInterview}
               size="lg"
-              className={`w-full ${
+              className={`w-full cursor-pointer
+              ${
                 isInterviewStarting
                   ? "pointer-events-none"
                   : "pointer-events-auto"
-              }`}
+              }
+              `}
               disabled={loading || question.length === 0}
             >
-              {loading ? "Loading Questions..." : "Start Interview"}
+              {loading
+                ? "Loading Questions..."
+                : isInterviewStarting
+                ? "Starting Interview..."
+                : "Start Interview"}
             </Button>
           </CardContent>
         </Card>
@@ -488,10 +497,10 @@ Key Guidelines:
                   <span className="text-foreground">Questions Loaded:</span>
                   <Badge variant="outline">{question.length}</Badge>
                 </div>
-                <div className="flex items-center justify-between">
+                {/* <div className="flex items-center justify-between">
                   <span className="text-foreground">Messages:</span>
                   <Badge variant="outline">{messages.length}</Badge>
-                </div>
+                </div> */}
               </div>
             </CardContent>
           </Card>
