@@ -62,6 +62,8 @@ export default function InterviewSession() {
   );
   const [analyzing, setAnalyzing] = useState(false);
   const [isAISpeaking, setIsAISpeaking] = useState(false);
+  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const router = useRouter();
   const questToAI = useRef("");
   const [isInterviewStarting, setIsInterviewStarting] = useState(false);
@@ -140,7 +142,7 @@ Begin the conversation with a friendly introduction, setting a relaxed yet profe
 Ask one question at a time and wait for the candidate's response before proceeding. 
 Keep the questions clear and concise. Below are the questions to ask one by one:
 
-Also don't pronounce Q-1 as "Q minus 1" instead pronounce it as "Question number 1" or "let's start with question number 1"
+Also don't pronounce Q-1 as "Q minus 1" instead pronounce it as "Question number 1" or "let's start with question number 1 and if there is a comma (,) or a full stop(.) or something similar you don't want to read that or pronounce that just take a 0.8 seconds pause and move forward"
 
 ${questions}
 
@@ -174,6 +176,19 @@ Key Guidelines:
     },
   });
 
+  // Toggle microphone mute/unmute
+  const toggleMute = (): void => {
+    if (vapiRef.current && started) {
+      if (isMuted) {
+        vapiRef.current.setMuted(false);
+        setIsMuted(false);
+      } else {
+        vapiRef.current.setMuted(true);
+        setIsMuted(true);
+      }
+    }
+  };
+
   // Time tracking effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -202,17 +217,36 @@ Key Guidelines:
       console.log("Call started");
       setStarted(true);
       setIsAISpeaking(true);
+      setIsMuted(false);
     };
 
     const onMessage = (message: VapiMessage): void => {
-      console.log("Message received:", message);
       setMessages((prev) => [...prev, message]);
 
-      // Track AI speaking status based on message types
-      if (message.type === "speech-start") {
-        setIsAISpeaking(true);
-      } else if (message.type === "speech-end") {
-        setIsAISpeaking(false);
+      // Enhanced message type handling for better user speaking detection
+      switch (message.type) {
+        case "speech-start":
+          setIsAISpeaking(true);
+          setIsUserSpeaking(false);
+          break;
+        case "speech-end":
+          setIsAISpeaking(false);
+          break;
+        case "transcript":
+          // When we receive a transcript, it means user was speaking
+          if (message.role === "user") {
+            setIsUserSpeaking(false); // User finished speaking
+          }
+          break;
+        case "user-started-speaking":
+          setIsUserSpeaking(true);
+          setIsAISpeaking(false);
+          break;
+        case "user-stopped-speaking":
+          setIsUserSpeaking(false);
+          break;
+        default:
+          break;
       }
     };
 
@@ -220,6 +254,8 @@ Key Guidelines:
       console.log("Call ended");
       setStarted(false);
       setIsAISpeaking(false);
+      setIsUserSpeaking(false);
+      setIsMuted(false);
     };
 
     const onError = (error: Error): void => {
@@ -255,21 +291,17 @@ Key Guidelines:
 
         const data = await res.json();
 
-        // Check for error in response
         if (data.error) {
           console.error("API Error:", data.error);
           throw new Error(data.error);
         }
 
-        // The generateText result has a 'text' property
-        const response = data?.steps[0].content?.[0]?.text; // ✅ Correct way to access the generated text
-
+        const response = data?.steps[0].content?.[0]?.text;
         const formatted = formatQuestion(response);
         const array = JSON.parse(formatted) as InterviewQuestion[];
         setQuestion(array);
       } catch (error) {
         console.error("Error fetching questions:", error);
-        // Set some fallback questions or show user-friendly error
         setQuestion([]);
       } finally {
         setLoading(false);
@@ -301,7 +333,7 @@ Key Guidelines:
 
   const startInterview = (): void => {
     try {
-      if (isInterviewStarting) return; // prevent double-clicks
+      if (isInterviewStarting) return;
 
       setIsInterviewStarting(true);
       if (question && question.length > 0) {
@@ -385,6 +417,22 @@ Key Guidelines:
     }
   };
 
+  // Helper function to get user status text
+  const getUserStatus = (): string => {
+    if (isMuted) return "Muted";
+    if (isUserSpeaking) return "Speaking...";
+    if (started && !isAISpeaking) return "Ready to respond";
+    return "Waiting...";
+  };
+
+  // Helper function to get user status color
+  const getUserStatusColor = (): string => {
+    if (isMuted) return "bg-red-500";
+    if (isUserSpeaking) return "bg-blue-500 animate-pulse";
+    if (started && !isAISpeaking) return "bg-green-500";
+    return "bg-muted";
+  };
+
   // Pre-interview screen
   if (analyzing) {
     return (
@@ -393,6 +441,7 @@ Key Guidelines:
       </div>
     );
   }
+
   if (!started && !analysisResult) {
     return (
       <div className="max-w-2xl mx-auto text-center ">
@@ -496,15 +545,17 @@ Key Guidelines:
                   <span className="text-foreground">Questions Loaded:</span>
                   <Badge variant="outline">{question.length}</Badge>
                 </div>
-                {/* <div className="flex items-center justify-between">
-                  <span className="text-foreground">Messages:</span>
-                  <Badge variant="outline">{messages.length}</Badge>
-                </div> */}
+                <div className="flex items-center justify-between">
+                  <span className="text-foreground">Microphone:</span>
+                  <Badge variant={isMuted ? "destructive" : "default"}>
+                    {isMuted ? "🔇 Muted" : "🎤 Active"}
+                  </Badge>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Speaking Status */}
+          {/* Speaking Status with Microphone Control */}
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="text-foreground">Speaking Status</CardTitle>
@@ -540,34 +591,113 @@ Key Guidelines:
               </div>
 
               {/* User Status */}
-              <div className="flex items-center space-x-4">
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-                    started && !isAISpeaking ? "bg-green-500" : "bg-muted"
-                  }`}
-                >
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${getUserStatusColor()}`}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
+                    {isMuted ? (
+                      <svg
+                        className="w-6 h-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        className="w-6 h-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">You</p>
+                    <p className="text-sm text-muted-foreground">
+                      {getUserStatus()}
+                    </p>
+                  </div>
+                  <div className="text-xs text-muted-foreground mr-4">
+                    {isMuted
+                      ? "🔇"
+                      : isUserSpeaking
+                      ? "🔵"
+                      : started && !isAISpeaking
+                      ? "🟢"
+                      : "⚪"}
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-foreground">You</p>
-                  <p className="text-sm text-muted-foreground">
-                    {started && !isAISpeaking
-                      ? "Ready to respond"
-                      : "Waiting..."}
-                  </p>
-                </div>
+
+                {/* Microphone Control Button */}
+                <Button
+                  variant={isMuted ? "destructive" : "outline"}
+                  size="sm"
+                  onClick={toggleMute}
+                  className="ml-4"
+                >
+                  {isMuted ? (
+                    <>
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+                        />
+                      </svg>
+                      Unmute
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                        />
+                      </svg>
+                      Mute
+                    </>
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -592,9 +722,24 @@ Key Guidelines:
             </div>
           </CardContent>
         </Card>
+
+        {/* Instructions Card */}
+        <Card className="bg-muted/30 border-border">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-2">
+              <h4 className="font-medium text-foreground">Quick Tips</h4>
+              <p className="text-sm text-muted-foreground">
+                • Speak clearly when the AI finishes asking a question • Use the
+                mute button if you need a moment to think • The system will
+                automatically detect when you're speaking
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
+
   if (analyzing) {
     return (
       <div>
@@ -602,6 +747,7 @@ Key Guidelines:
       </div>
     );
   }
+
   // Analysis results screen
   if (analysisResult) {
     return (
