@@ -263,7 +263,6 @@ Key Guidelines:
 
         // The generateText result has a 'text' property
         const response = data?.steps[0].content?.[0]?.text; // ✅ Correct way to access the generated text
-        console.log(response);
 
         const formatted = formatQuestion(response);
         const array = JSON.parse(formatted) as InterviewQuestion[];
