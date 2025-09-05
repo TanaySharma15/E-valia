@@ -389,7 +389,7 @@ Key Guidelines:
                 {jobPosition || "Loading..."}
               </Badge>
               <p className="text-muted-foreground">
-                Your mock interview is ready to begin. You&aposll be asked{" "}
+                Your mock interview is ready to begin. You&apos;ll be asked{" "}
                 {question.length} questions covering various aspects of the
                 role.
               </p>

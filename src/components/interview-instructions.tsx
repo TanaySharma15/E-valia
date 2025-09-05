@@ -40,7 +40,7 @@ export function InterviewInstructions() {
                   Find a Quiet Space
                 </h4>
                 <p className="text-muted-foreground text-sm">
-                  Choose a quiet environment where you won&apost be interrupted
+                  Choose a quiet environment where you won&apos;t be interrupted
                   during the interview.
                 </p>
               </div>
@@ -112,7 +112,7 @@ export function InterviewInstructions() {
             <li className="flex items-center space-x-2">
               <span className="text-primary">•</span>
               <span>
-                You&aposll receive real-time feedback on your speaking pace and
+                You&apos;ll receive real-time feedback on your speaking pace and
                 clarity
               </span>
             </li>
@@ -126,7 +126,7 @@ export function InterviewInstructions() {
             <li className="flex items-center space-x-2">
               <span className="text-primary">•</span>
               <span>
-                After completion, you&aposll receive detailed analysis and
+                After completion, you&apos;ll receive detailed analysis and
                 improvement suggestions
               </span>
             </li>

@@ -12,7 +12,7 @@ export default function JobDescriptionPage() {
             Job Description
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Provide the job description you&aposre applying for, or let our AI
+            Provide the job description you&apos;re applying for, or let our AI
             generate relevant interview questions based on your role.
           </p>
         </div>
