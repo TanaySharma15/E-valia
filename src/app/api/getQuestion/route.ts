@@ -7,6 +7,11 @@ export async function GET() {
     const supabase = await createClient();
     const { data: authData } = await supabase.auth.getUser();
     const userId = authData.user?.id;
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+      });
+    }
     const { data: resume } = await supabase
       .from("resume")
       .select("data")
@@ -16,14 +21,15 @@ export async function GET() {
       .from("job")
       .select("title,description")
       .eq("user_id", userId);
+
+    if (!job || job.length === 0) {
+      return new Response(JSON.stringify({ error: "No job found for user" }), {
+        status: 404,
+      });
+    }
     const jobTitle = job?.[0].title;
     const jobDescription = job?.[0].description;
 
-    if (!userId) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-      });
-    }
     const systemPrompt = `
 You are Sana, an expert interviewer. 
 You are interviewing a candidate for the role of "${jobTitle}".
@@ -57,12 +63,18 @@ Each question should be very specific to the candidate's profile (projects, skil
     return new Response(JSON.stringify(result), { status: 200 });
   } catch (error) {
     console.log(error);
+    console.error("API Error:", error);
     return new Response(
       JSON.stringify({
         error: "Internal Server Error",
-        details: String(error),
+        details: error instanceof Error ? error.message : String(error),
       }),
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
   }
 }

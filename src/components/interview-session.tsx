@@ -248,13 +248,28 @@ Key Guidelines:
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
         const data = await res.json();
-        const response = data.steps[0].response.messages[0].content[0].text;
+
+        // Check for error in response
+        if (data.error) {
+          console.error("API Error:", data.error);
+          throw new Error(data.error);
+        }
+
+        // The generateText result has a 'text' property
+        const response = data.text; // ✅ Correct way to access the generated text
         const formatted = formatQuestion(response);
         const array = JSON.parse(formatted) as InterviewQuestion[];
         setQuestion(array);
       } catch (error) {
-        console.log("Error fetching questions:", error);
+        console.error("Error fetching questions:", error);
+        // Set some fallback questions or show user-friendly error
+        setQuestion([]);
       } finally {
         setLoading(false);
       }
