@@ -731,7 +731,7 @@ Key Guidelines:
               <p className="text-sm text-muted-foreground">
                 • Speak clearly when the AI finishes asking a question • Use the
                 mute button if you need a moment to think • The system will
-                automatically detect when you're speaking
+                automatically detect when you&apos;re speaking
               </p>
             </div>
           </CardContent>
