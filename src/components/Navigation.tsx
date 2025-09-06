@@ -10,9 +10,9 @@ export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState<string | undefined>();
+  const supabase = createClient();
   useEffect(() => {
     const checkAuth = async () => {
-      const supabase = createClient();
       const { data: authData } = await supabase.auth.getUser();
       if (authData.user?.id) {
         setLoggedIn(true);
@@ -26,7 +26,9 @@ export function Navigation() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
+  const handleLogout = () => {
+    supabase.auth.signOut();
+  };
   return (
     <nav
       className={`fixed mb-10 top-0 w-full z-50 transition-all duration-300 ${
@@ -91,16 +93,28 @@ export function Navigation() {
             </div>
           ) : (
             <div className="flex items-center space-x-4 animate-fade-in-up">
-              <Button
-                variant="ghost"
-                asChild
-                className="hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105"
-              >
-                <Link href="/user">
+              <div>
+                <Button
+                  variant="ghost"
+                  className="hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105"
+                >
+                  {/* <Link href="/user"> */}
                   <ProfilePhoto />
                   {user}
-                </Link>
-              </Button>
+                  {/* </Link> */}
+                </Button>
+              </div>
+              <div>
+                <Button
+                  variant="ghost"
+                  className="hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105"
+                  onClick={handleLogout}
+                >
+                  {/* <Link href="/user"> */}
+                  Logout
+                  {/* </Link> */}
+                </Button>
+              </div>
             </div>
           )}
         </div>

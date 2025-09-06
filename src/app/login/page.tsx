@@ -11,9 +11,9 @@ import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
+  const supabase = createClient();
   useEffect(() => {
     async function getUser() {
-      const supabase = createClient();
       const { data: authData } = await supabase.auth.getUser();
       const id = authData.user?.id;
       if (id) {
@@ -22,6 +22,16 @@ export default function LoginPage() {
     }
     getUser();
   }, []);
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) console.error("Google sign-in error:", error.message);
+  };
   return (
     <div className="flex h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
       <Card className="w-full max-w-md shadow-lg rounded-2xl">
@@ -63,6 +73,12 @@ export default function LoginPage() {
               </Button>
               <Button formAction={signup} variant="outline" className="w-full">
                 Sign up
+              </Button>
+              <Button
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                onClick={handleGoogleLogin}
+              >
+                Signin with Google
               </Button>
             </div>
           </form>
