@@ -28,7 +28,7 @@ Also you should give the output in json format like ->
 `;
 
   const result = await generateText({
-    model: google("gemini-1.5-flash"),
+    model: google("gemini-3.6-flash"),
     prompt: prompt,
   });
   // const description = (

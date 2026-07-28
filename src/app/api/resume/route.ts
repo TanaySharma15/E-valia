@@ -1,74 +1,65 @@
 import { createClient } from "@/utils/supabase/server";
 import { google } from "@ai-sdk/google";
-import { convertToModelMessages, generateText, type UIMessage } from "ai";
-type TextContent = {
-  type: "text";
-  text: string;
-};
+import { generateObject } from "ai";
+import { z } from "zod";
+
+const resumeSchema = z.object({
+  name: z.string(),
+  skills: z.array(z.string()),
+  experience: z.array(
+    z.object({ company: z.string(), role: z.string(), years: z.number() }),
+  ),
+  education: z.array(z.string()),
+});
+
 export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getUser();
   const userId = authData.user?.id;
-  const { messages }: { messages: UIMessage[] } = await req.json();
-  const enhancedMessages: UIMessage[] = [
-    {
-      id: "system-msg-1",
-      role: "system",
-      parts: [
-        {
-          type: "text",
-          text: `
-            You are a resume parser.
-            Always output valid JSON in the following format:
-            {
-              "name": string,
-              "skills": string[],
-              "experience": [{ "company": string, "role": string, "years": number }],
-              "education": string[]
-            }
-            If data is missing, leave fields empty.
-            Do not add commentary or explanations.
-          `,
-        },
-      ],
-    },
-    ...messages,
-  ];
 
-  const result = await generateText({
-    model: google("gemini-1.5-flash"),
-    messages: convertToModelMessages(enhancedMessages),
+  const formData = await req.formData();
+  const file = formData.get("file") as File | null;
+
+  if (!file) {
+    return Response.json(
+      { success: false, message: "No file uploaded" },
+      { status: 400 },
+    );
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const base64 = Buffer.from(arrayBuffer).toString("base64");
+
+  const { object: data } = await generateObject({
+    model: google("gemini-3.6-flash"),
+    schema: resumeSchema,
+    system:
+      "You are a resume parser. Extract structured details from the resume. If data is missing, leave fields empty. Do not add commentary.",
+    messages: [
+      {
+        role: "user",
+        content: [
+          { type: "file", data: base64, mediaType: "application/pdf" },
+          { type: "text", text: "Extract the resume details." },
+        ],
+      },
+    ],
   });
-  const textOutput =
-    result.steps?.[0]?.content
-      .filter((c): c is TextContent => c.type === "text")
-      .map((c) => c.text)
-      .join("")
-      .replace("```json", "")
-      .replace("```", "") || "";
-  // console.log("Result from gemini->  ", textOutput);
-  const data = JSON.parse(textOutput);
-  // console.log(data.name);
 
   const { error } = await supabase
     .from("resume")
-    .insert([{ user_id: userId, data: data }]);
+    .insert([{ user_id: userId, data }]);
+
   if (error) {
     console.log("Error while inserting to db", error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: "Error while inserting resume to db",
-        error,
-      }),
-      { status: 500 }
+    return Response.json(
+      { success: false, message: "Error while inserting resume to db", error },
+      { status: 500 },
     );
   }
-  return new Response(
-    JSON.stringify({
-      success: true,
-      message: "Resume saved successfully",
-    }),
-    { status: 200 }
+
+  return Response.json(
+    { success: true, message: "Resume saved successfully" },
+    { status: 200 },
   );
 }

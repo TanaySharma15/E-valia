@@ -57,7 +57,7 @@ Each question should be very specific to the candidate's profile (projects, skil
     `;
 
     const result = await generateText({
-      model: google("gemini-2.0-flash"),
+      model: google("gemini-3.6-flash"),
       prompt: systemPrompt,
     });
     return new Response(JSON.stringify(result), { status: 200 });
@@ -74,7 +74,7 @@ Each question should be very specific to the candidate's profile (projects, skil
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
   }
 }

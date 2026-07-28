@@ -81,8 +81,8 @@ Second turn onward = one question at a time, using actual resume/job JSON and qu
     ];
 
     const result = await generateText({
-      model: google("gemini-1.5-flash"),
-      messages: convertToModelMessages(systemPrompt),
+      model: google("gemini-3.6-flash"),
+      messages: await convertToModelMessages(systemPrompt),
     });
     return new Response(JSON.stringify(result));
   } catch (error) {

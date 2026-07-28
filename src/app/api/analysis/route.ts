@@ -20,13 +20,13 @@ export async function POST(req: Request) {
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
 
     // Filter out system messages and format the conversation
     const relevantMessages = conversation.filter(
-      (msg) => msg.role === "user" || msg.role === "assistant"
+      (msg) => msg.role === "user" || msg.role === "assistant",
     );
 
     if (relevantMessages.length === 0) {
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
 
@@ -87,7 +87,7 @@ Return the analysis in **JSON format** like this:
 Make sure to return valid JSON within the code block.`;
 
     const result = await generateText({
-      model: google("gemini-2.0-flash"),
+      model: google("gemini-3.6-flash"),
       prompt: systemPrompt,
       temperature: 0.3, // Lower temperature for more consistent analysis
     });
@@ -102,7 +102,7 @@ Make sure to return valid JSON within the code block.`;
       }),
       {
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     console.error("Error in analysis API:", error);
@@ -114,7 +114,7 @@ Make sure to return valid JSON within the code block.`;
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }

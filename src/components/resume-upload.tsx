@@ -6,9 +6,6 @@ import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import { convertFileToUrl } from "@/utils/Convert_File";
 import { toast } from "sonner";
 
 export function ResumeUpload() {
@@ -20,11 +17,11 @@ export function ResumeUpload() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { messages, sendMessage } = useChat({
-    transport: new DefaultChatTransport({
-      api: "/api/resume",
-    }),
-  });
+  // const { messages, sendMessage } = useChat({
+  //   transport: new DefaultChatTransport({
+  //     api: "/api/resume",
+  //   }),
+  // });
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -58,34 +55,28 @@ export function ResumeUpload() {
         setUploadedFile(file);
       }
     },
-    []
+    [],
   );
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async () => {
+    if (!files || files.length === 0) return;
+
     try {
-      e.preventDefault();
       setLoading(true);
-      const fileParts =
-        files && files.length > 0 ? await convertFileToUrl(files) : [];
-      try {
-        await sendMessage({
-          role: "user",
-          parts: [{ type: "text", text: input }, ...fileParts],
-        });
+      const formData = new FormData();
+      formData.append("file", files[0]);
 
-        toast("Resume uploaded successfully");
-      } catch (error) {
-        toast("Error while uploading resume");
-        console.log(error);
-      }
+      const res = await fetch("/api/resume", {
+        method: "POST",
+        body: formData,
+      });
+      const json = await res.json();
 
-      setFiles(undefined);
-      setInput("");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (!json.success) throw new Error(json.message);
+      toast("Resume uploaded successfully");
     } catch (error) {
       console.log(error);
+      toast("Error while uploading resume");
     } finally {
       setLoading(false);
       router.push("/job");
