@@ -30,7 +30,7 @@ export function InterviewInstructions() {
         <CardContent className="space-y-4">
           <div className="space-y-4">
             <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shrink-0 mt-0.5">
                 <span className="text-primary-foreground text-sm font-bold">
                   1
                 </span>
@@ -47,7 +47,7 @@ export function InterviewInstructions() {
             </div>
 
             <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shrink-0 mt-0.5">
                 <span className="text-primary-foreground text-sm font-bold">
                   2
                 </span>
@@ -64,7 +64,7 @@ export function InterviewInstructions() {
             </div>
 
             <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shrink-0 mt-0.5">
                 <span className="text-primary-foreground text-sm font-bold">
                   3
                 </span>
@@ -79,7 +79,7 @@ export function InterviewInstructions() {
             </div>
 
             <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shrink-0 mt-0.5">
                 <span className="text-primary-foreground text-sm font-bold">
                   4
                 </span>

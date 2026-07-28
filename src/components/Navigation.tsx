@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { ProfilePhoto } from "./UserProfilePhoto";
 
@@ -10,7 +11,10 @@ export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState<string | undefined>();
+  const [loggingOut, setLoggingOut] = useState(false);
   const supabase = createClient();
+  const router = useRouter();
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: authData } = await supabase.auth.getUser();
@@ -26,9 +30,24 @@ export function Navigation() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  const handleLogout = () => {
-    supabase.auth.signOut();
+
+  const handleLogout = async () => {
+    try {
+      setLoggingOut(true);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Logout error:", error.message);
+        return;
+      }
+      setLoggedIn(false);
+      setUser(undefined);
+      router.push("/login");
+      router.refresh();
+    } finally {
+      setLoggingOut(false);
+    }
   };
+
   return (
     <nav
       className={`fixed mb-10 top-0 w-full z-50 transition-all duration-300 ${
@@ -42,7 +61,7 @@ export function Navigation() {
           <div className="flex items-center animate-slide-in-left">
             <Link
               href="/"
-              className="text-3xl font-bold gradient-text hover:scale-105 transition-transform duration-300"
+              className="text-3xl font-bold gradient-text hover:scale-105 transition-transform duration-300 cursor-pointer"
             >
               Evalia
             </Link>
@@ -53,21 +72,21 @@ export function Navigation() {
             <div className="ml-10 flex items-center space-x-8">
               <Link
                 href="/"
-                className="relative text-foreground hover:text-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-primary/5 group"
+                className="relative text-foreground hover:text-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-primary/5 group cursor-pointer"
               >
                 Home
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
               <Link
                 href="/how-it-works"
-                className="relative text-muted-foreground hover:text-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-primary/5 group"
+                className="relative text-muted-foreground hover:text-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-primary/5 group cursor-pointer"
               >
                 How it works
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
               <Link
                 href="/pricing"
-                className="relative text-muted-foreground hover:text-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-primary/5 group"
+                className="relative text-muted-foreground hover:text-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-primary/5 group cursor-pointer"
               >
                 Pricing
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
@@ -80,13 +99,13 @@ export function Navigation() {
               <Button
                 variant="ghost"
                 asChild
-                className="hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105"
+                className="hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105 cursor-pointer"
               >
                 <Link href="/login">Login</Link>
               </Button>
               <Button
                 asChild
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-0.5"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-0.5 cursor-pointer"
               >
                 <Link href="/signup">Sign Up</Link>
               </Button>
@@ -96,23 +115,20 @@ export function Navigation() {
               <div>
                 <Button
                   variant="ghost"
-                  className="hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105"
+                  className="hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105 cursor-pointer"
                 >
-                  {/* <Link href="/user"> */}
                   <ProfilePhoto />
                   {user}
-                  {/* </Link> */}
                 </Button>
               </div>
               <div>
                 <Button
                   variant="ghost"
-                  className="hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105"
+                  className="hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                   onClick={handleLogout}
+                  disabled={loggingOut}
                 >
-                  {/* <Link href="/user"> */}
-                  Logout
-                  {/* </Link> */}
+                  {loggingOut ? "Logging out..." : "Logout"}
                 </Button>
               </div>
             </div>
