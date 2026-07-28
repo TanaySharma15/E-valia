@@ -18,6 +18,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet: {
             name: string;
             value: string;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             options: any;
           }[],
         ) {
